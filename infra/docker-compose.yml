@@ -1,0 +1,31 @@
+services:
+  hapi-fhir:
+    image: hapiproject/hapi:v7.6.0
+    ports:
+      - "8080:8080"
+    environment:
+      - hapi.fhir.allow_external_references=true
+      - hapi.fhir.bulk_export_enabled=true
+    volumes:
+      - hapi-data:/data/hapi
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  hapi-data:
+  redis-data:

@@ -1,0 +1,22 @@
+models:
+  - type: main
+    engine: openai
+    model: gpt-4.1-mini
+
+rails:
+  input:
+    flows:
+      - check jailbreak
+      - check input safety
+  output:
+    flows:
+      - check output safety
+      - check no diagnosis
+      - check no medical advice
+
+instructions:
+  - type: general
+    content: |
+      You are a healthcare intake assistant. You collect patient information
+      and assist with triage. You NEVER provide medical diagnoses, treatment
+      plans, or prescribe medications.

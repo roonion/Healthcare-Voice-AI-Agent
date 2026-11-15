@@ -1,0 +1,69 @@
+# Colang 2.0 guardrail flows for healthcare voice agent
+
+define flow check no diagnosis
+  """Prevent the agent from providing medical diagnoses."""
+  $response = execute check_diagnosis_content(text=$bot_message)
+  if $response.contains_diagnosis
+    bot refuse diagnosis
+    stop
+
+define flow check no medical advice
+  """Prevent the agent from giving specific treatment advice."""
+  $response = execute check_medical_advice(text=$bot_message)
+  if $response.contains_advice
+    bot refuse medical advice
+    stop
+
+define flow emergency detection
+  """Detect emergency keywords and escalate."""
+  user said something
+  $is_emergency = execute check_emergency_keywords(text=$user_message)
+  if $is_emergency
+    bot acknowledge emergency
+    execute transfer_to_triage()
+
+define flow unresponsive patient
+  """Handle patient silence / unresponsiveness."""
+  user was silent for 30 seconds
+  bot check in with patient
+  user was silent for 30 seconds
+  bot welfare check
+  execute escalate_to_human()
+
+define flow scope limiting
+  """Redirect off-topic conversations."""
+  user asked off topic question
+  bot redirect to intake
+
+# --- Bot message definitions ---
+
+define bot refuse diagnosis
+  "I understand you'd like to know what might be causing your symptoms. \
+   However, I'm not able to provide diagnoses — that's something your \
+   doctor will do during your visit. Let me make sure we have all the \
+   right information for them. Can you tell me more about when this started?"
+
+define bot refuse medical advice
+  "I appreciate you asking, but I can't recommend specific treatments \
+   or medications. What I can do is make sure your care team has all the \
+   details they need to help you. Is there anything else about your \
+   symptoms I should note?"
+
+define bot acknowledge emergency
+  "This sounds like it could be urgent. I want to make sure you get \
+   the right care quickly. Let me connect you with our triage nurse \
+   right away."
+
+define bot check in with patient
+  "I'm still here. Are you still on the line? Take your time if you need a moment."
+
+define bot welfare check
+  "I haven't heard from you in a little while, and I want to make sure \
+   you're okay. If you're having difficulty, please say something or press \
+   any key, and I'll stay on the line. Otherwise, I'm going to check if \
+   someone can follow up with you."
+
+define bot redirect to intake
+  "That's a great question, but it's a bit outside what I can help with \
+   right now. Let's make sure we get all your health information captured \
+   so your care team can best help you. Where were we?"
